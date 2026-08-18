@@ -100,6 +100,11 @@ footer a{color:var(--sub)}
   <div class="riskword" id="riskWord">—</div>
   <div class="risksub" id="riskSub"></div>
 
+  <div class="sec">実測チェック — 今バンされてる？（リンクを開いて自分の目で確認）</div>
+  <div class="desc" style="margin-bottom:0">Xに<b>ログインした状態</b>で開いてください。開いた結果を「出た/出なかった」で記録すると、この欄の判定が確定します。</div>
+  <div id="liveChecks"></div>
+  <div class="note hide" id="liveNote" style="background:var(--risk-soft);color:var(--risk)">⚠ 実測でバンの兆候があります。下の「画像判定」「運用判定」で原因の心当たりを探し、対策してください（解除後も配信が戻るまで時間がかかります）。</div>
+
   <div class="sec">画像判定（AI・自動）</div>
   <div class="item" id="row-avatar">
     <img class="thumb" id="avatarImg" alt="" crossorigin="anonymous">
@@ -211,6 +216,45 @@ const QUESTIONS = [
   fix:"保存率・リプライ率・クリック率など「反応の質」を目標にする"},
 ];
 
+// ------- 実測チェック（利用者自身のブラウザで開いて確認） -------
+const LIVECHECKS = [
+ {key:'search', t:'検索バン（Search Ban）', url:u=>`https://x.com/search?q=from%3A${u}&f=live`,
+  s:'「最新」検索で自分のポストが出るか。1件も出なければ検索バンの疑い。'},
+ {key:'suggest', t:'検索候補バン（ユーザー検索）', url:u=>`https://x.com/search?q=${u}&f=user`,
+  s:'「ユーザー」検索で自分のアカウントが出るか。出なければ候補バンの疑い。'},
+ {key:'reply', t:'リプライの検索除外', url:u=>`https://x.com/search?q=from%3A${u}%20filter%3Areplies&f=live`,
+  s:'自分のリプライが検索に出るか。リプライをしているのに出なければ除外の疑い。'},
+];
+const liveState = {};
+function renderLive(u){
+  const box = document.getElementById('liveChecks');
+  box.innerHTML = '';
+  LIVECHECKS.forEach(c=>{
+    liveState[c.key] = null;
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.id = 'live-'+c.key;
+    div.innerHTML = `<span class="badge none" id="lb-${c.key}">未確認</span>
+      <div style="flex:1"><div class="it">${c.t}</div><div class="is">${c.s}</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn" style="padding:8px 14px;font-size:13px;text-decoration:none" href="${c.url(u)}" target="_blank" rel="noopener">検索を開く</a>
+        <button class="btn" style="padding:8px 14px;font-size:13px;background:var(--ok)" onclick="markLive('${c.key}',true)">出た</button>
+        <button class="btn" style="padding:8px 14px;font-size:13px;background:var(--risk)" onclick="markLive('${c.key}',false)">出なかった</button>
+      </div></div>`;
+    box.appendChild(div);
+  });
+  document.getElementById('liveNote').classList.add('hide');
+}
+function markLive(key, ok){
+  liveState[key] = ok;
+  const b = document.getElementById('lb-'+key), row = document.getElementById('live-'+key);
+  row.classList.remove('on-risk');
+  if(ok){ b.textContent='正常'; b.className='badge ok'; }
+  else { b.textContent='バン疑い'; b.className='badge risk'; row.classList.add('on-risk'); }
+  const anyBad = Object.values(liveState).some(v=>v===false);
+  document.getElementById('liveNote').classList.toggle('hide', !anyBad);
+}
+
 let avatarRisk = 0, bannerRisk = 0, model = null;
 const checked = new Array(QUESTIONS.length).fill(false);
 
@@ -289,6 +333,7 @@ function startCheck(){
   document.getElementById('uname').textContent='@'+u;
   document.getElementById('report').classList.remove('hide');
   updateScore();
+  renderLive(u);
   document.getElementById('report').scrollIntoView({behavior:'smooth'});
   const img = document.getElementById('avatarImg');
   img.style.display='none';
