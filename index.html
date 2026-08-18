@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>シャドバン原因診断 β — 新Xアルゴリズム準拠</title>
-<meta name="description" content="X（Twitter）のシャドウバンを『何が原因か』から診断する無料ツール。公開されたx-algorithmのコードに準拠。アイコン・ヘッダーのAI判定はブラウザ内で完結し、画像はどこにも送信されません。">
+<meta name="description" content="X（Twitter）のシャドウバンを『何が原因か』から診断する無料ツール。ユーザー名を入れて押すだけで、公開されたx-algorithmのコードに基づく診断カルテを表示。アイコンのAI判定はブラウザ内で完結し、画像はどこにも送信されません。">
 <style>
 :root{
   --bg:#F7F4EE; --card:#FFFFFF; --ink:#23202B; --sub:#6B6577;
@@ -31,40 +31,39 @@ input[type=text]{flex:1;border:1px solid var(--line);border-left:none;border-rad
 input[type=text]:focus{border-color:var(--accent)}
 .btn{border:none;border-radius:12px;padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#7C3AED,#C026D3);color:#fff;transition:opacity .15s}
 .btn:hover{opacity:.88}
-.btn.big{width:100%;padding:16px;font-size:16px;margin-top:16px}
 .btn:disabled{opacity:.4;cursor:default}
-.imgzone{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-.thumb{width:96px;height:96px;border-radius:16px;object-fit:cover;border:1px solid var(--line);background:#FAF8F4}
-.thumb.banner{width:100%;max-width:280px;height:94px;border-radius:12px}
-.drop{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--sub);font-size:13px;cursor:pointer;flex:1;min-width:200px;transition:border-color .15s}
-.drop:hover,.drop.on{border-color:var(--accent);color:var(--accent)}
-.verdict{font-size:13px;border-radius:10px;padding:8px 12px;margin-top:10px;display:none}
-.verdict.ok{display:block;background:var(--ok-soft);color:var(--ok)}
-.verdict.warn{display:block;background:var(--warn-soft);color:var(--warn)}
-.verdict.risk{display:block;background:var(--risk-soft);color:var(--risk)}
-.verdict.info{display:block;background:var(--accent-soft);color:var(--accent)}
-.qlist{display:flex;flex-direction:column;gap:10px}
-.q{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;transition:background .15s,border-color .15s}
-.q:hover{background:#FBFAF7}
-.q.yes{background:var(--accent-soft);border-color:var(--accent)}
-.q input{margin-top:5px;accent-color:var(--accent);width:17px;height:17px;flex-shrink:0}
-.q .qt{font-size:14px;font-weight:600}
-.q .qs{font-size:12px;color:var(--sub)}
 .gauge{height:14px;border-radius:999px;background:#EFEBE3;overflow:hidden;margin:14px 0 6px}
-.gauge>i{display:block;height:100%;border-radius:999px;width:0%;transition:width .8s ease;background:linear-gradient(90deg,#0A8A5F,#D97706,#C81E4E)}
+.gauge>i{display:block;height:100%;border-radius:999px;width:0%;transition:width .5s ease;background:linear-gradient(90deg,#0A8A5F,#D97706,#C81E4E)}
 .riskword{font-size:30px;font-weight:800;text-align:center;margin-top:8px}
-.finding{border-left:4px solid var(--line);padding:10px 14px;margin-top:12px;border-radius:0 12px 12px 0;background:#FBFAF7}
-.finding.risk{border-color:var(--risk);background:var(--risk-soft)}
-.finding.warn{border-color:var(--warn);background:var(--warn-soft)}
-.finding .fl{font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--sub);letter-spacing:.02em}
-.finding .ft{font-size:14px;font-weight:700;margin:2px 0}
-.finding .fd{font-size:12.5px;color:var(--sub)}
-.finding .fx{font-size:12.5px;margin-top:6px}
-.finding .fx b{color:var(--accent)}
+.risksub{font-size:12.5px;color:var(--sub);text-align:center;margin-bottom:6px}
+.item{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-top:10px;transition:background .15s,border-color .15s}
+.item.clickable{cursor:pointer}
+.item.clickable:hover{background:#FBFAF7}
+.item.on-warn{background:var(--warn-soft);border-color:var(--warn)}
+.item.on-risk{background:var(--risk-soft);border-color:var(--risk)}
+.badge{flex-shrink:0;font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;margin-top:3px;min-width:64px;text-align:center}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.risk{background:var(--risk-soft);color:var(--risk)}
+.badge.wait{background:var(--accent-soft);color:var(--accent)}
+.badge.none{background:#EFEBE3;color:var(--sub)}
+.item .it{font-size:14px;font-weight:700}
+.item .is{font-size:12px;color:var(--sub)}
+.item .il{font-size:10.5px;font-family:ui-monospace,Menlo,monospace;color:var(--sub);letter-spacing:.02em}
+.item .ifx{font-size:12.5px;margin-top:4px;display:none}
+.item .ifx b{color:var(--accent)}
+.item.on-warn .ifx,.item.on-risk .ifx{display:block}
+.thumb{width:52px;height:52px;border-radius:12px;object-fit:cover;border:1px solid var(--line);background:#FAF8F4;flex-shrink:0;display:none}
+.minidrop{font-size:12px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
+.sec{font-size:13px;font-weight:800;color:var(--sub);margin:18px 0 2px;letter-spacing:.04em}
+.note{font-size:12.5px;border-radius:10px;padding:10px 14px;margin-top:16px;background:var(--accent-soft);color:var(--accent)}
+.note a{color:inherit}
 table.score{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
 table.score td{padding:7px 10px;border-bottom:1px solid var(--line)}
 table.score td:last-child{text-align:right;font-family:ui-monospace,Menlo,monospace;font-weight:700}
 .plus{color:var(--ok)} .minus{color:var(--risk)}
+table.score tr.g td{background:#FBFAF7;font-weight:800;font-size:12px;color:var(--sub);letter-spacing:.03em}
+table.score small{color:var(--sub);font-weight:600;font-size:11px;margin-left:6px}
 details{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--card)}
 details summary{cursor:pointer;font-weight:700;font-size:14px}
 .links a{color:var(--accent);font-weight:600;text-decoration:none}
@@ -73,7 +72,6 @@ footer{margin-top:36px;text-align:center;font-size:11.5px;color:var(--sub)}
 footer a{color:var(--sub)}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}
 @keyframes sp{to{transform:rotate(360deg)}}
-#report{display:none}
 .hide{display:none}
 </style>
 </head>
@@ -82,100 +80,105 @@ footer a{color:var(--sub)}
 
 <header class="site">
   <div class="logo"><span class="mark">🩺</span>シャドバン原因診断<span class="beta">β</span></div>
-  <div class="tagline">「バンされてるか」ではなく「<b>なぜバンされるのか</b>」を診断する。<br>X公開アルゴリズム（x-algorithm）準拠・無料・画像はブラウザ内で判定（送信なし）</div>
+  <div class="tagline">「バンされてるか」ではなく「<b>なぜバンされるのか</b>」を診断する。<br>ユーザー名を入れて押すだけ。X公開アルゴリズム（x-algorithm）準拠・無料・画像はブラウザ内で判定（送信なし）</div>
 </header>
 
-<!-- STEP 1 -->
 <div class="card">
-  <h2><span class="step">STEP 1</span>アカウントを入力</h2>
-  <div class="desc">Xのユーザー名（@なし）を入力してください。アイコン画像を取得してAI判定します。</div>
+  <h2><span class="step">診断</span>Xのユーザー名を入力</h2>
+  <div class="desc">@なしで入力して「診断」を押すと、診断カルテが一度に表示されます。</div>
   <div class="inputrow">
     <span class="at">@</span>
     <input type="text" id="username" placeholder="ユーザー名" autocomplete="off" spellcheck="false">
     <button class="btn" id="startBtn" onclick="startCheck()">診断</button>
   </div>
-  <div class="verdict" id="fetchNote"></div>
 </div>
 
-<!-- STEP 2 -->
-<div class="card hide" id="imgCard">
-  <h2><span class="step">STEP 2</span>アイコン・ヘッダーのAI判定</h2>
-  <div class="desc">公開コードには「アイコン単独」「ヘッダー単独」でアカウント全体を非フォロワー非表示にするラベル（NSFW_AVATAR_IMAGE_USER_DROP / NSFW_BANNER_IMAGE_USER_DROP）が存在します。ここが最重要チェックです。<br><b>判定はすべてこのブラウザ内で実行され、画像が外部に送信されることはありません。</b></div>
-  <div class="imgzone">
-    <img class="thumb" id="avatarImg" alt="アイコン" crossorigin="anonymous" style="display:none">
-    <div class="drop" id="avatarDrop">アイコンを自動取得中…<br>（失敗したらここをタップして画像を選択）</div>
+<!-- 診断カルテ -->
+<div class="card hide" id="report">
+  <h2><span class="step">結果</span>診断カルテ <span id="uname" style="color:var(--sub);font-size:13px;font-weight:600"></span></h2>
+  <div class="gauge"><i id="gaugeBar"></i></div>
+  <div class="riskword" id="riskWord">—</div>
+  <div class="risksub" id="riskSub"></div>
+
+  <div class="sec">画像判定（AI・自動）</div>
+  <div class="item" id="row-avatar">
+    <img class="thumb" id="avatarImg" alt="" crossorigin="anonymous">
+    <span class="badge wait" id="avatarBadge">判定中</span>
+    <div>
+      <div class="il">NSFW_AVATAR_IMAGE_USER_DROP</div>
+      <div class="it">アイコン画像</div>
+      <div class="is" id="avatarDesc">アイコン1枚でアカウント全投稿が非フォロワー非表示になりうる最重要項目です。</div>
+      <div class="ifx">対策 → <b>アイコンを顔中心・非露出の画像に差し替える</b></div>
+    </div>
   </div>
-  <div class="verdict" id="avatarVerdict"></div>
-  <div class="imgzone" style="margin-top:16px">
-    <img class="thumb banner" id="bannerImg" alt="ヘッダー" style="display:none">
-    <div class="drop" id="bannerDrop">ヘッダー画像はここをタップ（またはドラッグ）で判定<br>※自動取得不可のため手動でお願いします</div>
+  <div class="item" id="row-banner">
+    <img class="thumb" id="bannerImg" alt="">
+    <span class="badge none" id="bannerBadge">未判定</span>
+    <div>
+      <div class="il">NSFW_BANNER_IMAGE_USER_DROP</div>
+      <div class="it">ヘッダー画像</div>
+      <div class="is">ヘッダー単独でも非フォロワー非表示の対象。自動取得できないため、<span class="minidrop" id="bannerPick">ここをタップして画像を選ぶ</span>と判定します（未判定でも減点しません）。</div>
+      <div class="ifx">対策 → <b>ヘッダーを風景・ロゴ・非露出画像に差し替える</b></div>
+    </div>
   </div>
-  <div class="verdict" id="bannerVerdict"></div>
   <input type="file" id="avatarFile" accept="image/*" class="hide">
   <input type="file" id="bannerFile" accept="image/*" class="hide">
-</div>
 
-<!-- STEP 3 -->
-<div class="card hide" id="quizCard">
-  <h2><span class="step">STEP 3</span>運用チェック 10問</h2>
-  <div class="desc">当てはまるものにチェック。公開コードのラベル・フィルタ・スコア重みに対応しています。</div>
-  <div class="qlist" id="qlist"></div>
-  <button class="btn big" onclick="showReport()">診断結果を見る</button>
-</div>
+  <div class="sec">運用判定（該当するものをタップ — タップするたびにスコアが即更新されます）</div>
+  <div id="qrows"></div>
 
-<!-- REPORT -->
-<div class="card" id="report">
-  <h2><span class="step">結果</span>診断カルテ</h2>
-  <div class="gauge"><i id="gaugeBar"></i></div>
-  <div class="riskword" id="riskWord"></div>
-  <div class="desc" style="text-align:center" id="riskSub"></div>
-  <div id="findings"></div>
-  <div class="verdict info" style="display:block;margin-top:16px">
-    <b>確定情報は公式で：</b>Xがあなたのアカウントに付けたラベルは公式ツール
-    <a href="https://x.com/i/under_the_hood" target="_blank" rel="noopener" style="color:inherit"><b>x.com/i/under_the_hood</b></a>
-    で確認できます（前月10投稿以上・アカウント作成1年以上が条件）。<br>
-    ポスト単位の検索除外の実測は既存の検索チェック系ツールをご利用ください。本ツールは「原因の診断」に特化しています。
+  <div class="note">
+    <b>確定情報は公式で：</b>Xがあなたに付けたラベルは公式ツール
+    <a href="https://x.com/i/under_the_hood" target="_blank" rel="noopener"><b>x.com/i/under_the_hood</b></a>
+    で確認できます（前月10投稿以上・作成1年以上）。ポスト単位の検索除外の実測は既存の検索チェック系ツールを。本ツールは「原因の診断」に特化しています。
   </div>
 </div>
 
-<!-- 参考 -->
 <details>
-  <summary>参考：公開されたスコア重み（2026-08-13公開の実数値）</summary>
-  <div class="desc" style="margin-top:8px">この重みは行動の「予測確率」に掛かる係数です（実測件数×重みではありません）。</div>
+  <summary>参考:Xのスコア表 — 何をすると伸びて、何をすると沈む？</summary>
+  <div class="note" style="margin-top:10px">
+    ① <b>リプライ・共有がケタ違いに強い</b> — リプライはいいねの10倍、リンクコピー共有・相互フォローからのリプライは40倍。「会話が生まれる投稿」が最強。<br>
+    ② <b>「画像を見られるだけ」ではほぼ評価されない</b> — 画像拡大はいいねの1/10、プロフィールクリックは0。いいね稼ぎ・固定ポスト誘導は伸びない構造。<br>
+    ③ <b>通報・ミュートは致命傷</b> — 通報はいいね468個分のマイナスに相当。攻めた1枚でプラスが全部消える。
+  </div>
   <table class="score">
-    <tr><td>リンクコピー共有</td><td class="plus">+20.0</td></tr>
-    <tr><td>相互フォローからのリプライ</td><td class="plus">+20.0</td></tr>
-    <tr><td>リプライ</td><td class="plus">+5.0</td></tr>
-    <tr><td>引用</td><td class="plus">+5.0</td></tr>
-    <tr><td>DM共有</td><td class="plus">+5.0</td></tr>
-    <tr><td>フォロー</td><td class="plus">+4.0</td></tr>
-    <tr><td>共有</td><td class="plus">+2.0</td></tr>
-    <tr><td>リポスト</td><td class="plus">+1.0</td></tr>
-    <tr><td>いいね</td><td class="plus">+0.5</td></tr>
-    <tr><td>URLを開く</td><td class="plus">+0.2</td></tr>
-    <tr><td>画像を拡大</td><td class="plus">+0.05</td></tr>
-    <tr><td>プロフィールクリック</td><td>0.0</td></tr>
-    <tr><td>通報</td><td class="minus">−234.0</td></tr>
-    <tr><td>ミュート</td><td class="minus">−58.8</td></tr>
-    <tr><td>「興味なし」</td><td class="minus">−43.2</td></tr>
-    <tr><td>ブロック</td><td class="minus">−31.2</td></tr>
+    <tr class="g"><td colspan="2">◎ 狙うべき行動（会話・共有される投稿を作る）</td></tr>
+    <tr><td>リンクをコピーして共有される <small>いいねの40倍</small></td><td class="plus">+20.0</td></tr>
+    <tr><td>相互フォローからのリプライ <small>いいねの40倍</small></td><td class="plus">+20.0</td></tr>
+    <tr><td>リプライされる <small>いいねの10倍</small></td><td class="plus">+5.0</td></tr>
+    <tr><td>引用される <small>いいねの10倍</small></td><td class="plus">+5.0</td></tr>
+    <tr><td>DMで共有される <small>いいねの10倍</small></td><td class="plus">+5.0</td></tr>
+    <tr><td>フォローされる <small>いいねの8倍</small></td><td class="plus">+4.0</td></tr>
+    <tr class="g"><td colspan="2">△ 弱い行動（これだけを集めても伸びない）</td></tr>
+    <tr><td>共有される</td><td class="plus">+2.0</td></tr>
+    <tr><td>リポストされる</td><td class="plus">+1.0</td></tr>
+    <tr><td>いいねされる <small>←これが基準</small></td><td class="plus">+0.5</td></tr>
+    <tr><td>URLを開かれる</td><td class="plus">+0.2</td></tr>
+    <tr><td>画像を拡大される <small>いいねの1/10</small></td><td class="plus">+0.05</td></tr>
+    <tr><td>プロフィールをクリックされる <small>評価されない</small></td><td>0.0</td></tr>
+    <tr class="g"><td colspan="2">✖ 致命傷（1つで大きく沈む・絶対に避ける）</td></tr>
+    <tr><td>通報される <small>いいね468個分のマイナス</small></td><td class="minus">−234.0</td></tr>
+    <tr><td>ミュートされる <small>いいね118個分</small></td><td class="minus">−58.8</td></tr>
+    <tr><td>「興味なし」を押される <small>いいね86個分</small></td><td class="minus">−43.2</td></tr>
+    <tr><td>ブロックされる <small>いいね62個分</small></td><td class="minus">−31.2</td></tr>
   </table>
+  <div class="desc" style="margin-top:10px">※この重みは行動の「予測確率」に掛かる係数です（実測件数×重みではありません）。出典: x-algorithm home-mixer/params/param.rs（2026-08-13公開）</div>
 </details>
 
 <details>
   <summary>このツールについて・出典</summary>
   <div class="desc links" style="margin-top:8px">
     本ツールは X / xAI が公開したアルゴリズム
-    <a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener">x-algorithm</a>（Apache-2.0）の
+    <a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener">x-algorithm</a>(Apache-2.0)の
     visibility-filtering / home-mixer 等の公開コードに基づく<b>非公式の自己診断ツール</b>です。判定は目安であり、Xの内部判定を保証するものではありません。<br><br>
-    ・画像のAI判定（nsfwjs）は全てお使いのブラウザ内で実行され、画像・ユーザー名が当サイトのサーバーに送信されることはありません（そもそもサーバーを持っていません）。<br>
+    ・画像のAI判定(nsfwjs)は全てお使いのブラウザ内で実行され、画像・ユーザー名が当サイトのサーバーに送信されることはありません(そもそもサーバーを持っていません)。<br>
     ・アイコンの自動取得には <a href="https://unavatar.io" target="_blank" rel="noopener">unavatar.io</a> を利用しています。<br>
     ・入力内容は保存されません。
   </div>
 </details>
 
 <footer>
-  シャドバン原因診断 β — 非公式・無断転載でなく<a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener">一次情報</a>の確認を推奨します
+  シャドバン原因診断 β — 判定は目安です。<a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener">一次情報</a>の確認を推奨します
 </footer>
 </div>
 
@@ -184,7 +187,7 @@ footer a{color:var(--sub)}
 <script src="https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/models/mobilenet_v2/group1-shard1of1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/browser/nsfwjs.min.js"></script>
 <script>
-// ------- 質問定義（x-algorithm 公開コードのラベル/フィルタに対応） -------
+// ------- 診断項目（x-algorithm 公開コードのラベル/フィルタに対応） -------
 const QUESTIONS = [
  {t:"投稿の半分以上が水着・下着・入浴・ベッド系の画像だ", s:"露出系に寄るとアカウント自体が成人向け分類に近づきます", label:"NSFW_HIGH_RECALL_USER_DROP", w:3,
   fix:"投稿バランスを見直す。私服・日常・比較企画などを混ぜ、露出系の比率を下げる"},
@@ -192,10 +195,10 @@ const QUESTIONS = [
   fix:"モザイク前提の画像はそもそも出さない。ライン上の画像は投稿しない"},
  {t:"伸びなかった投稿を削除して再投稿したことがある", s:"再投稿は既読フィルタで同じ人に届かず、検索除外の契機になりえます", label:"PreviouslySeenPostsFilter", w:2,
   fix:"削除→再投稿はしない。48時間で寿命が切れたら新しい投稿を作る"},
- {t:"1日に3本以上連投する日が多い", s:"同一著者の2本目以降は配信スコアが半減します（下限0.25）", label:"AuthorDiversity ×0.5", w:1,
+ {t:"1日に3本以上連投する日が多い", s:"同一著者の2本目以降は配信スコアが半減します(下限0.25)", label:"AuthorDiversity ×0.5", w:1,
   fix:"本数より1本の質。間隔を空けて投稿する"},
  {t:"「いいねしてね」「RTお願い」と書くことがある", s:"いいね自体の重みは+0.5と低く、誘導は通報・興味なしのリスクも", label:"エンゲージメント誘導", w:1,
-  fix:"「1〜4ならどれ？」など参加型の問いに変える（リプライは+5、相互なら+20）"},
+  fix:"「1〜4ならどれ？」など参加型の問いに変える(リプライは+5、相互なら+20)"},
  {t:"固定ポストや外部リンクへの誘導が運用の中心だ", s:"プロフィールクリックは0.0、URLクリックは+0.2しか評価されません", label:"導線設計", w:1,
   fix:"リンク誘導頼みをやめ、投稿そのものの会話量を増やす"},
  {t:"似た構図・似たテーマの画像を続けて投稿している", s:"類似投稿はタイムライン上で再配置され並びにくくなります", label:"vm-ranker", w:1,
@@ -208,127 +211,112 @@ const QUESTIONS = [
   fix:"保存率・リプライ率・クリック率など「反応の質」を目標にする"},
 ];
 
-const qlist = document.getElementById('qlist');
+let avatarRisk = 0, bannerRisk = 0, model = null;
+const checked = new Array(QUESTIONS.length).fill(false);
+
+// ------- 運用判定の行を生成（タップでトグル、即スコア反映） -------
+const qrows = document.getElementById('qrows');
 QUESTIONS.forEach((q,i)=>{
-  const div = document.createElement('label');
-  div.className='q';
-  div.innerHTML = `<input type="checkbox" data-i="${i}"><span><span class="qt">${q.t}</span><br><span class="qs">${q.s}</span></span>`;
-  div.querySelector('input').addEventListener('change',e=>{div.classList.toggle('yes',e.target.checked);});
-  qlist.appendChild(div);
+  const div = document.createElement('div');
+  div.className = 'item clickable';
+  div.innerHTML = `<span class="badge ok" id="qb${i}">該当なし</span>
+    <div><div class="il">${q.label}</div><div class="it">${q.t}</div><div class="is">${q.s}</div>
+    <div class="ifx">対策 → <b>${q.fix}</b></div></div>`;
+  div.addEventListener('click',()=>{
+    checked[i] = !checked[i];
+    const b = document.getElementById('qb'+i);
+    if(checked[i]){
+      b.textContent = '該当'; b.className = 'badge '+(q.w>=3?'risk':'warn');
+      div.classList.add(q.w>=3?'on-risk':'on-warn');
+    }else{
+      b.textContent = '該当なし'; b.className = 'badge ok';
+      div.classList.remove('on-risk','on-warn');
+    }
+    updateScore();
+  });
+  qrows.appendChild(div);
 });
 
+// ------- スコア集計（変化のたびに即更新） -------
+function updateScore(){
+  let score = avatarRisk + bannerRisk;
+  QUESTIONS.forEach((q,i)=>{ if(checked[i]) score += q.w; });
+  const max = 6 + QUESTIONS.reduce((a,q)=>a+q.w,0);
+  const pct = Math.min(100, Math.round(score/max*100));
+  document.getElementById('gaugeBar').style.width = Math.max(4,pct)+'%';
+  const w = document.getElementById('riskWord'), s = document.getElementById('riskSub');
+  if(score>=6){ w.textContent='危険'; w.style.color='var(--risk)';
+    s.textContent='アカウント単位のラベル(USER_DROP)が付いている・付く寸前の可能性。見えないBANはラベル表示なしで起こります。'; }
+  else if(score>=3){ w.textContent='注意'; w.style.color='var(--warn)';
+    s.textContent='リスク要因があります。「該当」の項目の対策から直しましょう。'; }
+  else { w.textContent='良好'; w.style.color='var(--ok)';
+    s.textContent='大きなリスク要因は見当たりません。この運用を維持しましょう。'; }
+}
+
 // ------- 画像AI判定 -------
-let model = null, avatarRisk = 0, bannerRisk = 0;
-async function getModel(){
-  if(!model){ model = await nsfwjs.load(); }
-  return model;
-}
-function riskFromPred(pred){
-  const p = {}; pred.forEach(x=>p[x.className]=x.probability);
-  const bad = (p.Porn||0)+(p.Hentai||0)+(p.Sexy||0)*0.7;
-  return {bad, p};
-}
-async function classify(imgEl, verdictEl, kind){
-  verdictEl.className='verdict info';
-  verdictEl.textContent='AI判定中…（初回はモデル読込に数秒かかります）';
+async function getModel(){ if(!model){ model = await nsfwjs.load(); } return model; }
+async function classify(imgEl, kind){
+  const badge = document.getElementById(kind==='avatar'?'avatarBadge':'bannerBadge');
+  const row = document.getElementById('row-'+kind);
+  badge.textContent='判定中'; badge.className='badge wait';
   try{
     const m = await getModel();
     const pred = await m.classify(imgEl);
-    const {bad,p} = riskFromPred(pred);
-    const pct = x=>Math.round(x*100);
-    const detail = `（露骨 ${pct(p.Porn||0)}% / セクシー ${pct(p.Sexy||0)}% / 通常 ${pct((p.Neutral||0)+(p.Drawing||0))}%）`;
-    let risk=0;
-    if(bad>0.5){ verdictEl.className='verdict risk'; verdictEl.textContent=`⚠ 高リスク：この${kind}は成人向けと判定される可能性が高いです ${detail}`; risk=3; }
-    else if(bad>0.2){ verdictEl.className='verdict warn'; verdictEl.textContent=`△ 注意：この${kind}はセクシー寄りと判定される可能性があります ${detail}`; risk=1.5; }
-    else { verdictEl.className='verdict ok'; verdictEl.textContent=`✓ 問題なし：この${kind}が原因でラベルが付く可能性は低そうです ${detail}`; risk=0; }
-    if(kind==='アイコン') avatarRisk=risk; else bannerRisk=risk;
+    const p = {}; pred.forEach(x=>p[x.className]=x.probability);
+    const bad = (p.Porn||0)+(p.Hentai||0)+(p.Sexy||0)*0.7;
+    const pc = x=>Math.round(x*100);
+    const detail = `露骨 ${pc(p.Porn||0)}% / セクシー ${pc(p.Sexy||0)}% / 通常 ${pc((p.Neutral||0)+(p.Drawing||0))}%`;
+    let risk = 0;
+    row.classList.remove('on-risk','on-warn');
+    if(bad>0.5){ badge.textContent='高リスク'; badge.className='badge risk'; row.classList.add('on-risk'); risk=3; }
+    else if(bad>0.2){ badge.textContent='注意'; badge.className='badge warn'; row.classList.add('on-warn'); risk=1.5; }
+    else { badge.textContent='問題なし'; badge.className='badge ok'; }
+    const descEl = kind==='avatar'?document.getElementById('avatarDesc'):row.querySelector('.is');
+    if(kind==='avatar') descEl.textContent = `AI判定: ${detail}`;
+    if(kind==='avatar') avatarRisk=risk; else bannerRisk=risk;
+    updateScore();
   }catch(e){
-    verdictEl.className='verdict warn';
-    verdictEl.textContent='AI判定に失敗しました（通信環境をご確認ください）: '+e.message;
+    badge.textContent='判定失敗'; badge.className='badge none';
   }
 }
 
-// ------- STEP1: 開始 -------
-async function startCheck(){
+// ------- 診断開始：押したら即カルテを全表示 -------
+function startCheck(){
   const u = document.getElementById('username').value.trim().replace(/^@/,'');
-  if(!u){ return; }
-  const btn=document.getElementById('startBtn');
-  btn.innerHTML='<span class="spin"></span>取得中'; btn.disabled=true;
-  document.getElementById('imgCard').classList.remove('hide');
-  document.getElementById('quizCard').classList.remove('hide');
+  if(!u) return;
+  const btn = document.getElementById('startBtn');
+  btn.innerHTML='<span class="spin"></span>診断中'; btn.disabled=true;
+  document.getElementById('uname').textContent='@'+u;
+  document.getElementById('report').classList.remove('hide');
+  updateScore();
+  document.getElementById('report').scrollIntoView({behavior:'smooth'});
   const img = document.getElementById('avatarImg');
-  const note = document.getElementById('fetchNote');
-  const drop = document.getElementById('avatarDrop');
   img.style.display='none';
-  // unavatar.io 経由でアイコン取得（CORS可）
-  const url = `https://unavatar.io/x/${encodeURIComponent(u)}`;
-  img.onload = async ()=>{
-    img.style.display='block';
-    drop.innerHTML='アイコンを取得しました。<br>別の画像で試す場合はここをタップ';
-    note.className='verdict ok'; note.textContent=`@${u} のアイコンを取得しました`;
-    btn.textContent='診断'; btn.disabled=false;
-    await classify(img, document.getElementById('avatarVerdict'), 'アイコン');
-    document.getElementById('imgCard').scrollIntoView({behavior:'smooth'});
-  };
+  img.onload = async ()=>{ img.style.display='block'; btn.textContent='診断'; btn.disabled=false; await classify(img,'avatar'); };
   img.onerror = ()=>{
-    note.className='verdict warn';
-    note.textContent='アイコンの自動取得に失敗しました。STEP 2 で画像を手動選択してください。';
     btn.textContent='診断'; btn.disabled=false;
-    document.getElementById('imgCard').scrollIntoView({behavior:'smooth'});
+    const badge=document.getElementById('avatarBadge');
+    badge.textContent='取得失敗'; badge.className='badge none';
+    document.getElementById('avatarDesc').innerHTML='アイコンを自動取得できませんでした。<span class="minidrop" id="avatarPick">ここをタップして画像を選ぶ</span>と判定します。';
+    document.getElementById('avatarPick').addEventListener('click',()=>document.getElementById('avatarFile').click());
   };
   img.crossOrigin='anonymous';
-  img.src=url;
+  img.src=`https://unavatar.io/x/${encodeURIComponent(u)}`;
 }
 
-// ------- 手動アップロード -------
-function bindUpload(dropId, fileId, imgId, verdictId, kind){
-  const drop=document.getElementById(dropId), file=document.getElementById(fileId), img=document.getElementById(imgId);
-  drop.addEventListener('click',()=>file.click());
-  ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('on');}));
-  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('on');}));
-  drop.addEventListener('drop',e=>{ if(e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); });
-  file.addEventListener('change',()=>{ if(file.files[0]) load(file.files[0]); });
-  function load(f){
+// ------- 手動画像選択（ヘッダー／アイコン失敗時） -------
+function bindFile(fileId, imgId, kind){
+  const file=document.getElementById(fileId), img=document.getElementById(imgId);
+  file.addEventListener('change',()=>{
+    const f=file.files[0]; if(!f) return;
     const r=new FileReader();
-    r.onload=()=>{ img.removeAttribute('crossorigin'); img.src=r.result; img.style.display='block';
-      img.onload=()=>classify(img, document.getElementById(verdictId), kind); };
+    r.onload=()=>{ img.removeAttribute('crossorigin'); img.onload=()=>classify(img,kind); img.src=r.result; img.style.display='block'; };
     r.readAsDataURL(f);
-  }
-}
-bindUpload('avatarDrop','avatarFile','avatarImg','avatarVerdict','アイコン');
-bindUpload('bannerDrop','bannerFile','bannerImg','bannerVerdict','ヘッダー');
-
-// ------- 結果 -------
-function showReport(){
-  let score = avatarRisk + bannerRisk;
-  const findings=[];
-  if(avatarRisk>=3) findings.push({lv:'risk',label:'NSFW_AVATAR_IMAGE_USER_DROP',t:'アイコンが成人向け判定のリスク',d:'アイコン1枚でアカウント全投稿が非フォロワーに非表示になりうるラベルです。',fix:'アイコンを顔中心・非露出の画像に差し替える'});
-  else if(avatarRisk>0) findings.push({lv:'warn',label:'NSFW_AVATAR_IMAGE_USER_DROP',t:'アイコンがセクシー寄り',d:'判定緩め（HIGH_RECALL）のラベルに引っかかる余地があります。',fix:'より安全側のアイコンを検討する'});
-  if(bannerRisk>=3) findings.push({lv:'risk',label:'NSFW_BANNER_IMAGE_USER_DROP',t:'ヘッダーが成人向け判定のリスク',d:'ヘッダー単独でも非フォロワー非表示のラベル対象です。',fix:'ヘッダーを風景・ロゴ・非露出画像に差し替える'});
-  else if(bannerRisk>0) findings.push({lv:'warn',label:'NSFW_BANNER_IMAGE_USER_DROP',t:'ヘッダーがセクシー寄り',d:'安全側に倒す価値があります。',fix:'より安全側のヘッダーを検討する'});
-  document.querySelectorAll('#qlist input').forEach(inp=>{
-    if(inp.checked){ const q=QUESTIONS[inp.dataset.i]; score+=q.w;
-      findings.push({lv:q.w>=3?'risk':(q.w>=2?'warn':''),label:q.label,t:q.t,d:q.s,fix:q.fix}); }
   });
-  const max = 6 + QUESTIONS.reduce((a,q)=>a+q.w,0);
-  const pct = Math.min(100, Math.round(score/max*100));
-  const rep=document.getElementById('report');
-  rep.style.display='block';
-  document.getElementById('gaugeBar').style.width=Math.max(4,pct)+'%';
-  const w=document.getElementById('riskWord'), s=document.getElementById('riskSub');
-  if(score>=6){ w.textContent='危険'; w.style.color='var(--risk)'; s.textContent='アカウント単位のラベル（USER_DROP）が付いている・付く寸前の可能性があります。見えないBAN＝非フォロワーへの配信停止はラベル表示なしで起こります。'; }
-  else if(score>=3){ w.textContent='注意'; w.style.color='var(--warn)'; s.textContent='いくつかのリスク要因があります。下のカルテから優先度の高いものを直しましょう。'; }
-  else { w.textContent='良好'; w.style.color='var(--ok)'; s.textContent='大きなリスク要因は見当たりません。この運用を維持しましょう。'; }
-  const fd=document.getElementById('findings');
-  fd.innerHTML = findings.length? findings.map(f=>`
-    <div class="finding ${f.lv}">
-      <div class="fl">${f.label}</div>
-      <div class="ft">${f.t}</div>
-      <div class="fd">${f.d}</div>
-      <div class="fx">対策 → <b>${f.fix}</b></div>
-    </div>`).join('') : '<div class="finding"><div class="ft">指摘事項なし</div><div class="fd">チェックした範囲ではリスク要因は見つかりませんでした。</div></div>';
-  rep.scrollIntoView({behavior:'smooth'});
 }
+bindFile('avatarFile','avatarImg','avatar');
+bindFile('bannerFile','bannerImg','banner');
+document.getElementById('bannerPick').addEventListener('click',()=>document.getElementById('bannerFile').click());
 document.getElementById('username').addEventListener('keydown',e=>{ if(e.key==='Enter') startCheck(); });
 </script>
 </body>
